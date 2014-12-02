@@ -70,6 +70,10 @@ PageAttrs::PageAttrs(PageAttrs *attrs, Dict *dict) {
     mediaBox = attrs->mediaBox;
     cropBox = attrs->cropBox;
     haveCropBox = attrs->haveCropBox;
+    _haveBleedBox = attrs->_haveBleedBox;
+    _haveTrimBox = attrs->_haveTrimBox;
+    _haveArtBox = attrs->_haveArtBox;
+    _dvipdfmxBB = attrs->_dvipdfmxBB;
     rotate = attrs->rotate;
     attrs->resources.copy(&resources);
   } else {
@@ -81,6 +85,10 @@ PageAttrs::PageAttrs(PageAttrs *attrs, Dict *dict) {
     mediaBox.y2 = 792;
     cropBox.x1 = cropBox.y1 = cropBox.x2 = cropBox.y2 = 0;
     haveCropBox = gFalse;
+    _haveBleedBox = gFalse;
+    _haveTrimBox = gFalse;
+    _haveArtBox = gFalse;
+    _dvipdfmxBB = MEDIA;
     rotate = 0;
     resources.initNull();
   }
@@ -98,12 +106,17 @@ PageAttrs::PageAttrs(PageAttrs *attrs, Dict *dict) {
 
   // other boxes
   bleedBox = cropBox;
-  readBox(dict, "BleedBox", &bleedBox);
+  _haveBleedBox = readBox(dict, "BleedBox", &bleedBox);
   trimBox = cropBox;
-  readBox(dict, "TrimBox", &trimBox);
+  _haveTrimBox = readBox(dict, "TrimBox", &trimBox);
   artBox = cropBox;
-  readBox(dict, "ArtBox", &artBox);
-
+  _haveArtBox = readBox(dict, "ArtBox", &artBox);
+  
+  _dvipdfmxBB = haveCropBox ? CROP :
+                _haveArtBox ? ART :
+                _haveTrimBox ? TRIM :
+                _haveBleedBox ? BLEED : MEDIA;
+  
   // rotate
   dict->lookup("Rotate", &obj1);
   if (obj1.isInt()) {
@@ -148,6 +161,10 @@ PageAttrs::PageAttrs() {
   mediaBox.x2 = mediaBox.y2 = 50;
   cropBox = mediaBox;
   haveCropBox = gFalse;
+  _haveBleedBox = gFalse;
+  _haveTrimBox = gFalse;
+  _haveArtBox = gFalse;
+  _dvipdfmxBB = MEDIA;
   bleedBox = cropBox;
   trimBox = cropBox;
   artBox = cropBox;

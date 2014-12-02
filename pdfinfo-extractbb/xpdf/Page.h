@@ -23,6 +23,8 @@ class XRef;
 class OutputDev;
 class Links;
 
+enum BBType {MEDIA, CROP, BLEED, TRIM, ART};
+
 //------------------------------------------------------------------------
 
 class PDFRectangle {
@@ -60,8 +62,12 @@ public:
   PDFRectangle *getCropBox() { return &cropBox; }
   GBool isCropped() { return haveCropBox; }
   PDFRectangle *getBleedBox() { return &bleedBox; }
+  GBool haveBleedBox() { return _haveBleedBox; }
   PDFRectangle *getTrimBox() { return &trimBox; }
+  GBool haveTrimBox() { return _haveTrimBox; }
   PDFRectangle *getArtBox() { return &artBox; }
+  GBool haveArtBox() { return _haveArtBox; }
+  BBType dvipdfmxBB() { return _dvipdfmxBB; }
   int getRotate() { return rotate; }
   GString *getLastModified()
     { return lastModified.isString()
@@ -91,6 +97,10 @@ private:
   PDFRectangle mediaBox;
   PDFRectangle cropBox;
   GBool haveCropBox;
+  GBool _haveBleedBox;
+  GBool _haveTrimBox;
+  GBool _haveArtBox;
+  BBType _dvipdfmxBB;
   PDFRectangle bleedBox;
   PDFRectangle trimBox;
   PDFRectangle artBox;
@@ -130,6 +140,10 @@ public:
   PDFRectangle *getMediaBox() { return attrs->getMediaBox(); }
   PDFRectangle *getCropBox() { return attrs->getCropBox(); }
   GBool isCropped() { return attrs->isCropped(); }
+  GBool haveBleedBox() { return attrs->haveBleedBox(); }
+  GBool haveTrimBox() { return attrs->haveTrimBox(); }
+  GBool haveArtBox() { return attrs->haveArtBox(); }
+  BBType dvipdfmxBB() { return attrs->dvipdfmxBB(); }
   double getMediaWidth() 
     { return attrs->getMediaBox()->x2 - attrs->getMediaBox()->x1; }
   double getMediaHeight()
