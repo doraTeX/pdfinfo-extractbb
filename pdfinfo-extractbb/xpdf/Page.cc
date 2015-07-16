@@ -260,7 +260,7 @@ Page::Page(PDFDoc *docA, int numA, Dict *pageDict, PageAttrs *attrsA) {
 
   // get attributes
   attrs = attrsA;
-  attrs->clipBoxes();
+  // attrs->clipBoxes();
 
   // annotations
   pageDict->lookupNF("Annots", &annots);

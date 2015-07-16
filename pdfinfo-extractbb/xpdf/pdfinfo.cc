@@ -84,6 +84,33 @@ static ArgDesc argDesc[] = {
     {NULL}
 };
 
+static GBool isIncluded(PDFRectangle *rect1, PDFRectangle *rect2) {
+    return (rect1->x1 >= rect2->x1) && (rect1->y1 >= rect2->y1) && (rect1->x2 <= rect2->x2) && (rect1->y2 <= rect2->y2);
+}
+
+void clipTo(PDFRectangle *rect1, PDFRectangle *rect2) {
+  if (rect1->x1 < rect2->x1) {
+    rect1->x1 = rect2->x1;
+  } else if (rect1->x1 > rect2->x2) {
+    rect1->x1 = rect2->x2;
+  }
+  if (rect1->x2 < rect2->x1) {
+    rect1->x2 = rect2->x1;
+  } else if (rect1->x2 > rect2->x2) {
+    rect1->x2 = rect2->x2;
+  }
+  if (rect1->y1 < rect2->y1) {
+    rect1->y1 = rect2->y1;
+  } else if (rect1->y1 > rect2->y2) {
+    rect1->y1 = rect2->y2;
+  }
+  if (rect1->y2 < rect2->y1) {
+    rect1->y2 = rect2->y1;
+  } else if (rect1->y2 > rect2->y2) {
+    rect1->y2 = rect2->y2;
+  }
+}
+
 int main(int argc, char *argv[]) {
     PDFDoc *doc;
     GString *fileName;
@@ -312,12 +339,32 @@ int main(int argc, char *argv[]) {
                     printBox(buf, page->getMediaBox(), gTrue, (page->dvipdfmxBB() == MEDIA));
                     sprintf(buf, "Page %4d CropBox:  ", pg);
                     printBox(buf, page->getCropBox(), page->isCropped(), (page->dvipdfmxBB() == CROP));
+                    if (!isIncluded(page->getCropBox(), page->getMediaBox())) {
+                      clipTo(page->getCropBox(), page->getMediaBox());
+                      sprintf(buf, " *clipped CropBox:  ", pg);
+                      printBox(buf, page->getCropBox(), page->isCropped(), gFalse);
+                    }
                     sprintf(buf, "Page %4d BleedBox: ", pg);
                     printBox(buf, page->getBleedBox(), page->haveBleedBox(), (page->dvipdfmxBB() == BLEED));
+                    if (!isIncluded(page->getBleedBox(), page->getMediaBox())) {
+                      clipTo(page->getBleedBox(), page->getMediaBox());
+                      sprintf(buf, " *clipped BleedBox: ");
+                      printBox(buf, page->getBleedBox(), page->isCropped(), gFalse);
+                    }
                     sprintf(buf, "Page %4d TrimBox:  ", pg);
                     printBox(buf, page->getTrimBox(), page->haveTrimBox(), (page->dvipdfmxBB() == TRIM));
+                    if (!isIncluded(page->getTrimBox(), page->getMediaBox())) {
+                      clipTo(page->getTrimBox(), page->getMediaBox());
+                      sprintf(buf, " *clipped TrimBox:  ");
+                      printBox(buf, page->getTrimBox(), page->isCropped(), gFalse);
+                    }
                     sprintf(buf, "Page %4d ArtBox:   ", pg);
                     printBox(buf, page->getArtBox(), page->haveArtBox(), (page->dvipdfmxBB() == ART));
+                    if (!isIncluded(page->getArtBox(), page->getMediaBox())) {
+                      clipTo(page->getArtBox(), page->getMediaBox());
+                      sprintf(buf, " *clipped ArtBox:   ");
+                      printBox(buf, page->getArtBox(), page->isCropped(), gFalse);
+                    }
                     puts("------------------------------------------------------------------------");
                 }
             } else {
@@ -453,3 +500,4 @@ static void printBox(const char *text, PDFRectangle *box, GBool explicitBox, GBo
     }
     printf("\n");
 }
+
